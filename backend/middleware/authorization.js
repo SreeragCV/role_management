@@ -22,35 +22,35 @@ exports.verifyToken = (req, res, next) => {
 };
 
 // ROLE BASED AUTH
-exports.isFinance = async (req, res, next) => {
+exports.isFinance = (req, res, next) => {
   if (req.role === "finance" || "admin") {
     return next();
   }
   return res.status(401).json("Not Authorized!!");
 };
 
-exports.isMarketing = async (req, res, next) => {
+exports.isMarketing = (req, res, next) => {
   if (req.role === "marketing" || "admin") {
     return next();
   }
   return res.status(401).json("Not Authorized!!");
 };
 
-exports.isHumanResource = async (req, res, next) => {
+exports.isHumanResource = (req, res, next) => {
   if (req.role === "human-resource" || "admin") {
     return next();
   }
   return res.status(401).json("Not Authorized!!");
 };
 
-exports.isManager = async (req, res, next) => {
+exports.isManager = (req, res, next) => {
   if (req.role === "manager" || "admin") {
     return next();
   }
   return res.status(401).json("Not Authorized!!");
 };
 
-exports.isAdmin = async (req, res, next) => {
+exports.isAdmin = (req, res, next) => {
   if (req.role === "admin") {
     return next();
   }

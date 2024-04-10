@@ -6,6 +6,7 @@ import { Link, useNavigate } from "react-router-dom";
 function UserList() {
   const [fetchUsers, setFetchUsers] = useState([]);
   const { role } = useContext(RolesContext);
+  const [deleteUser, setDeleteUser] = useState(null);
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
@@ -15,6 +16,7 @@ function UserList() {
         token,
       },
     });
+    setDeleteUser(id);
   }
 
   function handleEdit(id) {
@@ -36,7 +38,7 @@ function UserList() {
       }
     };
     fetchAllUsers();
-  }, [role]);
+  }, [role, deleteUser]);
 
   return (
     <div className="form-container">

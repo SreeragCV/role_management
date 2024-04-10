@@ -6,7 +6,7 @@ const bcrypt = require("bcrypt");
 module.exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    console.log(email);
+
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(400).json({ error: "Cannot find the user" });
@@ -22,7 +22,7 @@ module.exports.login = async (req, res) => {
       .status(200)
       .json({ message: "Successfully logged in", role: user.role });
   } catch (error) {
-    return res.status(500).json({ message: "Server Error" });
+    return res.status(500).json({ error: "Server Error" });
   }
 };
 
@@ -30,7 +30,6 @@ module.exports.login = async (req, res) => {
 module.exports.createUser = async (req, res) => {
   try {
     const { email, name, role, password } = req.body;
-    console.log(email, name, role, password);
     if (!email || !name || !role || !password) {
       return res.status(401).json({ error: "fields must not be empty" });
     }
@@ -43,7 +42,7 @@ module.exports.createUser = async (req, res) => {
     await newUser.save();
     return res.status(200).json({ message: "SUCCESS" });
   } catch (error) {
-    return res.status(500).json({ message: "Server Error" });
+    return res.status(500).json({ error: "Server Error" });
   }
 };
 
@@ -51,23 +50,22 @@ module.exports.createUser = async (req, res) => {
 module.exports.deleteUser = async (req, res) => {
   try {
     const { id } = req.params;
-    console.log(id);
-    const deleteUser = await User.deleteOne({ _id: id });
+    await User.findByIdAndDelete(id);
     return res.status(200).json({ message: "User Deleted" });
-  } catch (e) {
-    return res.status(500).json({ message: "Server Error" });
+  } catch (error) {
+    return res.status(500).json({ error: "Server Error" });
   }
 };
 
 // USERS LIST
-module.exports.usersList = async (req, res) => {
+module.exports.getUsers = async (req, res) => {
   try {
     const users = await User.find({ role: { $ne: "admin" } }).select(
       "-password"
     );
     return res.status(200).json(users);
   } catch (error) {
-    return res.status(500).json({ message: "Server Error" });
+    return res.status(500).json({ error: "Server Error" });
   }
 };
 
@@ -77,37 +75,41 @@ module.exports.userDetails = async (req, res) => {
     const id = req.params.id;
     const user = await User.findOne({ _id: id }).select("-password");
     if (!user) {
-      return res.status(400).json({ error: "no user found" });
+      return res.status(400).json({ error: "No user found" });
     }
-    console.log(user);
     return res.status(200).json(user);
   } catch (error) {
-    return res.status(500).json({ message: "Server Error" });
+    return res.status(500).json({ error: "Server Error" });
   }
 };
 
 // EDIT USER
 module.exports.editUser = async (req, res) => {
-  const id = req.params.id;
-  const { email, role, name } = req.body;
-  if (!email || !name || !role) {
-    return res.status(401).json({ error: "fields must not be empty" });
+  try {
+    const id = req.params.id;
+    const { email, role, name } = req.body;
+    if (!email || !name || !role) {
+      return res.status(401).json({ error: "fields must not be empty" });
+    }
+    const updatedUser = await User.findByIdAndUpdate(
+      id,
+      { email, role, name },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    return res.status(200).json({ message: "User Updated!" });
+  } catch (error) {
+    return res.status(500).json({ error: "Server Error" });
   }
-  const editUser = await User.updateOne(
-    { _id: id },
-    { $set: { email, role, name } }
-  );
-  return res.status(200).json({ message: "User Updated!" });
 };
 
 // AUTH-CHECK
-module.exports.isAuth = async (req, res) => {
-  try {
-    return res.json({
-      status: true,
-      role: req.role,
-    });
-  } catch (error) {
-    return res.status(500).json({ message: "Server Error" });
-  }
+module.exports.isAuth = (req, res) => {
+  return res.json({
+    status: true,
+    role: req.role,
+  });
 };
